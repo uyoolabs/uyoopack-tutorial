@@ -35,7 +35,7 @@
   /* 면 */
   --color-paper: oklch(0.98 0.005 240);
   --color-surface: #ffffff;
-  --color-photo: #ece9dd; /* 상품 사진의 배경과 같은 색 — 사진이 상자 없이 앉는다 */
+  --color-photo: #e7e0d0; /* 상품 사진의 배경과 같은 색 — 사진이 상자 없이 앉는다 */
   --color-line: oklch(0.91 0.02 230);
 
   /* 상태 — 색만으로 말하지 않는다(CON-5). 언제나 낱말이 함께 선다 */
