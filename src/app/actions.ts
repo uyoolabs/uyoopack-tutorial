@@ -17,26 +17,44 @@ function idOf(form: FormData): string {
   return typeof id === "string" ? id : "";
 }
 
-/** 규칙이 거절하면 그 문장을 주소에 실어 같은 화면으로 돌아간다. */
-async function run(to: string, fn: () => Promise<void>): Promise<never> {
+/**
+ * 규칙이 거절하면 그 문장을 주소에 실어 같은 화면으로 돌아간다.
+ * `hash` 는 돌아갈 자리다 — 첫 화면은 배너가 커서, 담을 때마다 맨 위로 올라가면 상품을 다시 찾아 내려와야 한다.
+ */
+async function run(to: string, fn: () => Promise<void>, hash = ""): Promise<never> {
+  const [path, query = ""] = to.split("?");
+  const url = (extra: string) => {
+    const q = [query, extra].filter(Boolean).join("&");
+    return `${path}${q ? `?${q}` : ""}${hash}`;
+  };
   try {
     await fn();
   } catch (err) {
     if (err instanceof CartError) {
-      redirect(`${to}?error=${encodeURIComponent(err.message)}`);
+      redirect(url(`error=${encodeURIComponent(err.message)}`));
     }
     throw err;
   }
   revalidatePath("/", "layout");
-  redirect(to);
+  redirect(url(""));
+}
+
+/** 거르던 종류를 그대로 둔다. 모르는 값은 버린다 — 주소에 실리는 값이다. */
+function catOf(form: FormData): string {
+  const cat = form.get("cat");
+  return typeof cat === "string" && /^[a-z]+$/.test(cat) ? `?cat=${cat}` : "";
 }
 
 export async function addToCartAction(form: FormData) {
   const productId = idOf(form);
   const qty = qtyOf(form);
-  await run("/", async () => {
-    await mutate((s) => ({ state: { ...s, cart: addLine(s.cart, productId, qty, s.stock) }, result: undefined }));
-  });
+  await run(
+    `/${catOf(form)}`,
+    async () => {
+      await mutate((s) => ({ state: { ...s, cart: addLine(s.cart, productId, qty, s.stock) }, result: undefined }));
+    },
+    "#products",
+  );
 }
 
 export async function changeQtyAction(form: FormData) {
