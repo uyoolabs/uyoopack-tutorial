@@ -38,7 +38,7 @@ function requireQty(qty: number): void {
 function requireStock(product: Product, qty: number, stock: Stock): void {
   const left = stock[product.id] ?? 0;
   if (qty > left) {
-    throw new CartError("out_of_stock", `${product.name}은 ${left}개까지 담을 수 있습니다.`);
+    throw new CartError("out_of_stock", `${product.name}의 재고가 ${left}개라 ${left}개까지 담을 수 있습니다.`);
   }
 }
 
