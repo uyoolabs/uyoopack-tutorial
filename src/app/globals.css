@@ -1,9 +1,85 @@
 @import "tailwindcss";
 
+/**
+ * 디자인 토큰. 화면의 색·서체·모서리·그림자는 전부 여기서 온다(명세 CON-3).
+ * 컴포넌트에는 hex 색도, Tailwind 기본 팔레트(stone-·blue- …)도 쓰지 않는다 — 브랜드를 바꾸는 자리는 이 블록 하나다.
+ *
+ * 강조색은 우유갑 띠의 파랑 하나다(명세 DEC-3). 상품 사진이 색을 갖고 있어서 화면의 색이 여럿이면 사진과 다툰다.
+ */
+@theme {
+  --font-sans:
+    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", sans-serif;
+
+  /* 브랜드 */
+  --color-brand: #2353c6;
+  --color-brand-strong: #1a3f9c;
+  --color-brand-soft: #e9effc;
+  --color-on-brand: #ffffff;
+
+  /* 글자 */
+  --color-ink: #1c1b18;
+  --color-ink-soft: #57534a;
+  --color-ink-faint: #8d887c;
+
+  /* 면 */
+  --color-paper: #fbfaf6;
+  --color-surface: #ffffff;
+  --color-photo: #ece9dd; /* 상품 사진의 배경과 같은 색 — 사진이 상자 없이 앉는다 */
+  --color-line: #e7e3d8;
+
+  /* 상태 — 색만으로 말하지 않는다(CON-5). 언제나 낱말이 함께 선다 */
+  --color-ok: #1f7a4d;
+  --color-ok-soft: #e6f4ec;
+  --color-warn: #8a4b00;
+  --color-warn-soft: #fff4e0;
+  --color-warn-line: #f1cf8e;
+
+  --radius-card: 1rem;
+  --radius-control: 0.625rem;
+  --shadow-card: 0 1px 2px rgb(28 27 24 / 0.04), 0 8px 24px -12px rgb(28 27 24 / 0.12);
+  --shadow-lift: 0 2px 4px rgb(28 27 24 / 0.06), 0 16px 32px -12px rgb(28 27 24 / 0.18);
+}
+
 :root {
   color-scheme: light;
 }
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
+}
+
 body {
-  @apply bg-stone-50 text-stone-900 antialiased;
+  @apply bg-paper font-sans text-ink antialiased;
+  font-feature-settings: "tnum";
+  /* 한국어는 어절에서 줄을 바꾼다 — 글자 단위로 끊기면 "없습니/다" 가 된다 */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/* 키보드로 닿은 자리는 언제나 보인다 */
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+/* 수량 칸의 브라우저 화살표는 − + 버튼이 대신한다 */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  * {
+    transition: none !important;
+  }
 }
