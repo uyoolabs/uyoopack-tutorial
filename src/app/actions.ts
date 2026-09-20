@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { addLine, CartError, EMPTY_CART, removeLine, setQty } from "@/lib/cart";
 import { placeOrder } from "@/lib/orders";
-import { mutate } from "@/lib/store";
+import { mutate, resetState } from "@/lib/store";
 
 function qtyOf(form: FormData): number {
   const raw = form.get("qty");
@@ -67,4 +67,11 @@ export async function placeOrderAction() {
     revalidatePath("/", "layout");
     redirect(`/orders/${orderId}`);
   });
+}
+
+/** 처음 상태로 — 재고·장바구니·주문을 전부 되돌린다. 데모에서 재고를 다 쓴 사람이 다시 시작하는 길이다. */
+export async function resetShopAction() {
+  await resetState();
+  revalidatePath("/", "layout");
+  redirect("/");
 }

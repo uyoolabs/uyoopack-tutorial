@@ -1,53 +1,38 @@
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { type Cart, EMPTY_CART, type Stock } from "./cart";
-import { initialStock } from "./catalog";
-import type { Order } from "./orders";
+import { cookies } from "next/headers";
+import { decodeState, encodeState, type State } from "./state";
 
 /**
- * 저장소. `data/store.json` 파일 하나가 전부다 — 가게 하나, 장바구니 하나, 주문 목록.
- * 데이터베이스로 바꾸고 싶으면 이 파일만 바꾸면 된다. 규칙(`cart.ts`·`orders.ts`)은 저장소를 모른다.
+ * 저장소. **방문자별 쿠키 한 장**이 전부다 — 가게의 재고, 장바구니, 최근 주문.
+ *
+ * 파일도 데이터베이스도 쓰지 않는 이유는 이 앱이 두 곳에서 설정 없이 돌아야 하기 때문이다: 클론해서 `pnpm dev`,
+ * 그리고 서버리스 배포(파일 시스템에 쓸 수 없다). 대가는 방문자마다 자기 가게를 갖는다는 것이다 — 재고도 따로다.
+ * 진짜 가게처럼 재고를 함께 보려면 이 파일만 데이터베이스로 바꾸면 된다. 규칙(`cart.ts`·`orders.ts`)과
+ * 담는 법(`state.ts`)은 저장소를 모른다.
  */
-export type State = {
-  stock: Stock;
-  cart: Cart;
-  orders: Order[];
-  nextSeq: number;
-};
+const COOKIE = "um_state";
+const THIRTY_DAYS = 60 * 60 * 24 * 30;
 
-const FILE = path.join(process.cwd(), "data", "store.json");
-
-function freshState(): State {
-  return { stock: initialStock(), cart: EMPTY_CART, orders: [], nextSeq: 1 };
-}
-
+/** 읽기. 서버 컴포넌트에서도 된다. */
 export async function readState(): Promise<State> {
-  try {
-    const raw = await readFile(FILE, "utf8");
-    return JSON.parse(raw) as State;
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") return freshState();
-    throw err;
-  }
+  return decodeState((await cookies()).get(COOKIE)?.value);
 }
 
-async function writeState(state: State): Promise<void> {
-  await mkdir(path.dirname(FILE), { recursive: true });
-  const tmp = `${FILE}.${process.pid}.tmp`;
-  await writeFile(tmp, JSON.stringify(state, null, 2), "utf8");
-  await rename(tmp, FILE);
-}
-
-let chain: Promise<unknown> = Promise.resolve();
-
-/** 읽고 → 바꾸고 → 쓴다. 같은 프로세스 안에서는 한 번에 하나씩만 지나간다. */
-export function mutate<T>(fn: (state: State) => { state: State; result: T }): Promise<T> {
-  const run = chain.then(async () => {
-    const before = await readState();
-    const { state, result } = fn(before);
-    await writeState(state);
-    return result;
+/** 읽고 → 바꾸고 → 쓴다. **Server Action 에서만** 부른다 — 쿠키는 렌더 중에 쓸 수 없다. */
+export async function mutate<T>(fn: (state: State) => { state: State; result: T }): Promise<T> {
+  const jar = await cookies();
+  const { state, result } = fn(decodeState(jar.get(COOKIE)?.value));
+  jar.set(COOKIE, encodeState(state), {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: THIRTY_DAYS,
+    // 배포된 곳은 https 다. 로컬 http 에서는 Secure 쿠키를 받지 않는 브라우저가 있다.
+    secure: Boolean(process.env.VERCEL),
   });
-  chain = run.catch(() => undefined);
-  return run;
+  return result;
+}
+
+/** 처음 상태로. 쿠키를 지우면 다음 읽기가 처음 재고로 시작한다. */
+export async function resetState(): Promise<void> {
+  (await cookies()).delete(COOKIE);
 }

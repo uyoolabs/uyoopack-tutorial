@@ -2,7 +2,7 @@ import { type Cart, CartError, type Stock, summarize } from "./cart";
 
 /**
  * 주문의 규칙. 결제는 붙이지 않는다 — 주문을 확정하고 재고를 줄이는 데서 끝난다.
- * 주문 줄은 그때의 이름·가격을 그대로 적어 둔다. 나중에 가격이 바뀌어도 지난 주문은 그대로여야 한다.
+ * 주문 줄은 그때의 가격을 그대로 적어 둔다. 나중에 가격이 바뀌어도 지난 주문은 그대로여야 한다.
  */
 export type OrderLine = {
   productId: string;
@@ -13,6 +13,7 @@ export type OrderLine = {
 };
 
 export type Order = {
+  /** 주문 번호와 같다(`UM-0001`). 주소(`/orders/UM-0001`)에 그대로 쓴다. */
   id: string;
   number: string;
   placedAt: string;
@@ -47,7 +48,7 @@ export function placeOrder(
     next[line.product.id] = left - line.qty;
   }
   const order: Order = {
-    id: crypto.randomUUID(),
+    id: orderNumber(opts.seq),
     number: orderNumber(opts.seq),
     placedAt: opts.now.toISOString(),
     lines: summary.lines.map((l) => ({
