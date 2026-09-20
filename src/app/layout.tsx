@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { resetShopAction } from "./actions";
 import { summarize } from "@/lib/cart";
 import { readState } from "@/lib/store";
 import "./globals.css";
@@ -34,6 +35,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </nav>
         </header>
         <main className="mx-auto max-w-3xl px-4 py-8">{children}</main>
+        <footer className="mx-auto max-w-3xl px-4 pb-10 text-xs text-stone-500">
+          <form action={resetShopAction} className="border-t border-stone-200 pt-4">
+            재고·장바구니·주문은 이 브라우저에만 있습니다.{" "}
+            <button type="submit" className="underline hover:text-stone-900">
+              처음 상태로
+            </button>
+          </form>
+        </footer>
       </body>
     </html>
   );

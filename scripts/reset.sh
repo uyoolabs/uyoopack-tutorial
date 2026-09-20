@@ -3,7 +3,6 @@
 #
 # - main 을 템플릿의 main 으로 맞추고 강제로 민다(커밋·어댑터 설치 파일·데이터가 전부 사라진다)
 # - claude/ 로 시작하는 브랜치와 열린 PR 을 닫는다
-# - 실행 데이터(data/store.json)를 지운다
 #
 # 우유팩 쪽 프로젝트는 여기서 되돌리지 않는다 — 프로젝트 설정의 `튜토리얼 다시 만들기` 가 그 일을 한다.
 set -euo pipefail
@@ -37,5 +36,4 @@ for b in $(git branch --list 'claude/*'); do
   git branch -D "$b" || true
 done
 
-rm -f data/store.json
-echo "템플릿 상태로 되돌렸습니다."
+echo "템플릿 상태로 되돌렸습니다. 앱 안의 재고·주문은 브라우저에 있습니다 — 앱 바닥의 '처음 상태로' 로 되돌립니다."
