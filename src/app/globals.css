@@ -4,29 +4,39 @@
  * 디자인 토큰. 화면의 색·서체·모서리·그림자는 전부 여기서 온다(명세 CON-3).
  * 컴포넌트에는 hex 색도, Tailwind 기본 팔레트(stone-·blue- …)도 쓰지 않는다 — 브랜드를 바꾸는 자리는 이 블록 하나다.
  *
- * 강조색은 우유갑 띠의 파랑 하나다(명세 DEC-3). 상품 사진이 색을 갖고 있어서 화면의 색이 여럿이면 사진과 다툰다.
+ * **우유마켓은 우유랩스 가족이다**(명세 DEC-3). 색은 가족의 하늘색과 남색이고 값은 우유랩스 로고 규격과
+ * 디자인 시스템(uyooglass)에서 가져왔다. 다만 **필요한 만큼만** 옮긴다 — 색·모서리·그림자·옅은 하늘빛 배경까지다.
+ * 유리 재질·다크 모드·움직임 체계는 옮기지 않는다: 튜토리얼 저장소가 그만큼 복잡해질 이유가 없다.
  */
 @theme {
   --font-sans:
     "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
     "Noto Sans KR", "Malgun Gothic", sans-serif;
 
-  /* 브랜드 */
-  --color-brand: #2353c6;
-  --color-brand-strong: #1a3f9c;
-  --color-brand-soft: #e9effc;
+  /* 브랜드 — 강조색은 하늘색 하나다. 로고 규격의 Light Border */
+  --color-brand: #248ce1;
+  --color-brand-strong: #1a6fba;
+  --color-brand-soft: oklch(0.94 0.02 230);
   --color-on-brand: #ffffff;
+  /* 남색 — 로고의 외곽선. 머리 위 안내 띠도 이 색이다 */
+  --color-navy: #11487e;
 
-  /* 글자 */
-  --color-ink: #1c1b18;
-  --color-ink-soft: #57534a;
-  --color-ink-faint: #8d887c;
+  /* 로고(가족 로고 규격: 남색 외곽선 + 하늘색 두 톤, 글자는 짙은 회남색) */
+  --color-logo-line: #11487e;
+  --color-logo-light: #9ad6f1;
+  --color-logo-deep: #5cb2e1;
+  --color-logo-word: #3e4758;
+
+  /* 글자 — uyooglass 의 foreground·muted-foreground */
+  --color-ink: oklch(0.33 0.07 255);
+  --color-ink-soft: oklch(0.45 0.05 250);
+  --color-ink-faint: oklch(0.55 0.04 245);
 
   /* 면 */
-  --color-paper: #fbfaf6;
+  --color-paper: oklch(0.98 0.005 240);
   --color-surface: #ffffff;
   --color-photo: #ece9dd; /* 상품 사진의 배경과 같은 색 — 사진이 상자 없이 앉는다 */
-  --color-line: #e7e3d8;
+  --color-line: oklch(0.91 0.02 230);
 
   /* 상태 — 색만으로 말하지 않는다(CON-5). 언제나 낱말이 함께 선다 */
   --color-ok: #1f7a4d;
@@ -35,10 +45,11 @@
   --color-warn-soft: #fff4e0;
   --color-warn-line: #f1cf8e;
 
-  --radius-card: 1rem;
-  --radius-control: 0.625rem;
-  --shadow-card: 0 1px 2px rgb(28 27 24 / 0.04), 0 8px 24px -12px rgb(28 27 24 / 0.12);
-  --shadow-lift: 0 2px 4px rgb(28 27 24 / 0.06), 0 16px 32px -12px rgb(28 27 24 / 0.18);
+  /* 모서리와 그림자 — uyooglass 의 종이(14px)와 바깥 그림자 + 위쪽 하이라이트 */
+  --radius-card: 0.875rem;
+  --radius-control: 0.5rem;
+  --shadow-card: 0 8px 32px rgb(27 59 111 / 0.08), inset 0 1px 0 rgb(255 255 255 / 0.6);
+  --shadow-lift: 0 12px 40px rgb(27 59 111 / 0.14), inset 0 1px 0 rgb(255 255 255 / 0.6);
 }
 
 :root {
@@ -56,6 +67,18 @@ body {
   /* 한국어는 어절에서 줄을 바꾼다 — 글자 단위로 끊기면 "없습니/다" 가 된다 */
   word-break: keep-all;
   overflow-wrap: anywhere;
+}
+
+/* 우유랩스 화면의 옅은 하늘빛 배경. 고정이라 스크롤해도 제자리다 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60rem 36rem at 0% 0%, oklch(0.9 0.06 230 / 0.6), transparent 65%),
+    radial-gradient(48rem 36rem at 100% 100%, oklch(0.9 0.05 300 / 0.35), transparent 65%);
 }
 
 /* 키보드로 닿은 자리는 언제나 보인다 */

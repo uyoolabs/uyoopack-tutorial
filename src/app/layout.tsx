@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
+import { Do_Hyeon } from "next/font/google";
 import Link from "next/link";
 import { resetShopAction } from "./actions";
-import { CartIcon, DropMark } from "@/components/icons";
+import { CartIcon, LogoMark } from "@/components/icons";
 import { FREE_SHIPPING_FROM, SHIPPING_FEE, summarize } from "@/lib/cart";
 import { won } from "@/lib/money";
 import { readState } from "@/lib/store";
@@ -16,11 +17,17 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1 };
 
 export const dynamic = "force-dynamic";
 
+/**
+ * 워드마크의 서체 — 우유랩스 가족 로고의 한글이 도현체다(우유랩스·우유팩·우유노트). **표식 옆 이름에만 쓴다**:
+ * 제목과 본문은 Pretendard 하나다. 글자 네 개를 위해 서체를 들이는 이유는 그 네 글자가 가족의 얼굴이기 때문이다.
+ */
+const wordmark = Do_Hyeon({ weight: "400", subsets: ["latin"], display: "swap", preload: false });
+
 const PRETENDARD =
   "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css";
 
 /**
- * 머리와 바닥은 모든 화면에서 같다(명세 REQ-11). 머리: 배송비 안내 띠 · 표식 · 상품 · 주문 내역 · 장바구니(개수).
+ * 머리와 바닥은 모든 화면에서 같다(명세 REQ-11). 머리: 배송비 안내 띠(남색) · 가족 문법의 표식과 도현체 이름 · 상품 · 주문 내역 · 장바구니(개수).
  * 바닥: 배송·결제 안내와, 여기가 데모 가게라는 사실. 동작하지 않는 장식(검색·로그인)은 두지 않는다.
  */
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -41,15 +48,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           본문으로 건너뛰기
         </a>
 
-        <p className="bg-brand px-4 py-2 text-center text-xs font-medium text-on-brand sm:text-sm">
+        <p className="bg-navy px-4 py-2 text-center text-xs font-medium text-on-brand sm:text-sm">
           {won(FREE_SHIPPING_FROM)} 이상 주문하면 배송비가 없습니다 · 그 아래는 {won(SHIPPING_FEE)}
         </p>
 
         <header className="sticky top-0 z-40 border-b border-line bg-surface/90 backdrop-blur">
           <nav aria-label="주 메뉴" className="mx-auto flex h-16 max-w-5xl items-center gap-1 px-4">
             <Link href="/" className="mr-2 flex items-center gap-2 sm:mr-6">
-              <DropMark className="size-7 text-brand" />
-              <span className="text-lg font-extrabold tracking-tight">우유마켓</span>
+              <LogoMark className="size-9" />
+              <span className={`${wordmark.className} text-2xl leading-none text-logo-word`}>우유마켓</span>
             </Link>
             <Link href="/#products" className={navLink}>
               상품
@@ -80,9 +87,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <footer className="mt-10 border-t border-line bg-surface">
           <div className="mx-auto grid max-w-5xl gap-8 px-4 py-10 text-sm sm:grid-cols-3">
             <div>
-              <p className="flex items-center gap-2 font-extrabold">
-                <DropMark className="size-5 text-brand" />
-                우유마켓
+              <p className="flex items-center gap-2">
+                <LogoMark className="size-7" />
+                <span className={`${wordmark.className} text-xl leading-none text-logo-word`}>우유마켓</span>
               </p>
               <p className="mt-2 text-ink-soft">전화 대신 웹으로 주문받는 동네 우유 가게입니다.</p>
             </div>

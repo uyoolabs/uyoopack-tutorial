@@ -65,21 +65,30 @@ export function ChevronIcon({ className }: IconProps) {
   );
 }
 
-/** 우유 한 방울. 머리의 표식과 파비콘(`app/icon.svg`)이 같은 모양이다. */
-export function DropMark({ className }: IconProps) {
+/**
+ * 우유마켓의 표식 — 장바구니에 든 우유갑. **우유랩스 가족 로고의 문법**을 따른다(명세 DEC-3): 굵은 남색 외곽선,
+ * 하늘색 두 톤의 면, 둥근 이음매, 그리고 우유갑. 우유노트가 공책 + 우유갑인 것처럼 여기는 장바구니 + 우유갑이다.
+ * 파비콘(`app/icon.svg`)이 같은 그림이다 — 고치면 둘 다 고친다.
+ */
+export function LogoMark({ className }: IconProps) {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden className={className}>
-      <path
-        fill="currentColor"
-        d="M12 2.5c3.4 4.2 6.5 7.7 6.5 11.4a6.5 6.5 0 0 1-13 0C5.5 10.2 8.6 6.7 12 2.5z"
-      />
-      <path
-        fill="none"
-        stroke="var(--color-on-brand)"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        d="M9 14.2a3.2 3.2 0 0 0 2.6 3"
-      />
+    <svg
+      viewBox="0 0 64 64"
+      aria-hidden
+      className={className}
+      fill="none"
+      stroke="var(--color-logo-line)"
+      strokeWidth={4}
+      strokeLinejoin="round"
+      strokeLinecap="round"
+    >
+      <rect x="23" y="4" width="20" height="8" rx="1.5" fill="var(--color-logo-light)" />
+      <path d="M23 12h20l7 10v20H38V22z" fill="var(--color-logo-deep)" />
+      <path d="M23 12h20l-5 10H16z" fill="var(--color-logo-light)" />
+      <path d="M16 22h22v20H16z" fill="var(--color-logo-light)" />
+      <path d="M11 42h42l-3.6 16a3 3 0 0 1-3 2.4H17.6a3 3 0 0 1-3-2.4z" fill="var(--color-logo-deep)" />
+      <rect x="6" y="36" width="52" height="9" rx="4.5" fill="var(--color-logo-light)" />
+      <path d="M24 50v5M32 50v5M40 50v5" strokeWidth={3.2} />
     </svg>
   );
 }
