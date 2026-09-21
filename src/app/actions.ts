@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { addLine, CartError, EMPTY_CART, removeLine, setQty } from "@/lib/cart";
-import { placeOrder } from "@/lib/orders";
+import { cancelOrder, placeOrder } from "@/lib/orders";
 import { mutate, resetState } from "@/lib/store";
 
 function qtyOf(form: FormData): number {
@@ -84,6 +84,26 @@ export async function placeOrderAction() {
     });
     revalidatePath("/", "layout");
     redirect(`/orders/${orderId}`);
+  });
+}
+
+/**
+ * 주문을 취소한다. 주문은 취소됨으로 남고 재고가 주문 수량만큼 돌아온다.
+ * 이미 취소된 주문이나 없는 주문이면 규칙이 거절하고 그 문장이 상세 화면에 선다.
+ */
+export async function cancelOrderAction(form: FormData) {
+  const orderId = form.get("orderId");
+  const id = typeof orderId === "string" ? orderId : "";
+  await run(`/orders/${encodeURIComponent(id)}`, async () => {
+    await mutate((s) => {
+      const target = s.orders.find((o) => o.id === id);
+      if (!target) throw new CartError("unknown_product", "없는 주문입니다.");
+      const { order, stock } = cancelOrder(target, s.stock);
+      return {
+        state: { ...s, stock, orders: s.orders.map((o) => (o.id === order.id ? order : o)) },
+        result: undefined,
+      };
+    });
   });
 }
 

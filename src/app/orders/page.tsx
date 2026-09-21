@@ -43,7 +43,13 @@ export default async function OrdersPage() {
                 <span className="min-w-0 flex-1">
                   <span className="block text-xs text-ink-faint">{when(o.placedAt)}</span>
                   <span className="block truncate font-semibold">{gist(o.lines)}</span>
-                  <span className="block font-mono text-xs text-ink-soft">{o.number}</span>
+                  <span className="flex items-center gap-2">
+                    <span className="font-mono text-xs text-ink-soft">{o.number}</span>
+                    {/* 상태는 낱말로 선다(명세 CON-5). 확정된 주문에는 아무 표식이 없다. */}
+                    {o.status === "cancelled" ? (
+                      <span className="rounded-control bg-warn-soft px-1.5 py-0.5 text-xs font-semibold text-warn">취소됨</span>
+                    ) : null}
+                  </span>
                 </span>
                 <span className="text-lg font-bold tabular-nums">{won(o.total)}</span>
                 <ChevronIcon className="size-5 shrink-0 text-ink-faint" />

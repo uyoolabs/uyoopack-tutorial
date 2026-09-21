@@ -25,8 +25,8 @@ export function freshState(): State {
 
 /** [상품 순번, 수량, 그때의 가격] */
 type PackedLine = [number, number, number];
-/** [일련번호, 주문 시각(초), 줄, 배송비] */
-type PackedOrder = [number, number, PackedLine[], number];
+/** [일련번호, 주문 시각(초), 줄, 배송비, 취소됨(취소된 주문만 `1`)] */
+type PackedOrder = [number, number, PackedLine[], number, 1?];
 type Packed = {
   v: 1;
   /** 카탈로그 순서의 남은 재고. */
@@ -54,12 +54,15 @@ export function encodeState(state: State): string {
     v: 1,
     s: PRODUCTS.map((p) => state.stock[p.id] ?? 0),
     c: state.cart.lines.map((l) => [indexOf(l.productId), l.qty]),
-    o: state.orders.slice(0, MAX_ORDERS).map((o) => [
-      Number(o.number.replace(/^UM-/, "")),
-      Math.floor(Date.parse(o.placedAt) / 1000),
-      o.lines.map((l): PackedLine => [indexOf(l.productId), l.qty, l.price]),
-      o.shipping,
-    ]),
+    o: state.orders.slice(0, MAX_ORDERS).map((o): PackedOrder => {
+      const seq = Number(o.number.replace(/^UM-/, ""));
+      const at = Math.floor(Date.parse(o.placedAt) / 1000);
+      const lines = o.lines.map((l): PackedLine => [indexOf(l.productId), l.qty, l.price]);
+      // 확정된 주문에는 아무것도 붙이지 않는다 — 쿠키는 한 글자도 아깝다.
+      return o.status === "cancelled"
+        ? [seq, at, lines, o.shipping, 1]
+        : [seq, at, lines, o.shipping];
+    }),
     n: state.nextSeq,
   };
   return Buffer.from(JSON.stringify(packed), "utf8").toString("base64url");
@@ -76,7 +79,7 @@ export function decodeState(raw: string | undefined | null): State {
       cart: {
         lines: packed.c.map(([i, qty]) => ({ productId: productAt(i).id, qty: nonNegative(qty) })),
       },
-      orders: packed.o.slice(0, MAX_ORDERS).map(([seq, at, lines, shipping]): Order => {
+      orders: packed.o.slice(0, MAX_ORDERS).map(([seq, at, lines, shipping, cancelled]): Order => {
         const orderLines = lines.map(([i, qty, price]) => {
           const p = productAt(i);
           return { productId: p.id, name: p.name, unit: p.unit, price, qty };
@@ -90,7 +93,7 @@ export function decodeState(raw: string | undefined | null): State {
           subtotal,
           shipping,
           total: subtotal + shipping,
-          status: "placed",
+          status: cancelled === 1 ? "cancelled" : "placed",
         };
       }),
       nextSeq: Math.max(1, Math.floor(packed.n)),

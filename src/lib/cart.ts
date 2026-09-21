@@ -13,7 +13,7 @@ export const EMPTY_CART: Cart = { lines: [] };
 export const FREE_SHIPPING_FROM = 30_000;
 export const SHIPPING_FEE = 3_000;
 
-export type CartErrorCode = "unknown_product" | "bad_qty" | "out_of_stock";
+export type CartErrorCode = "unknown_product" | "bad_qty" | "out_of_stock" | "already_cancelled";
 
 export class CartError extends Error {
   constructor(

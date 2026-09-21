@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { addLine, EMPTY_CART } from "./cart";
 import { initialStock, PRODUCTS } from "./catalog";
-import { placeOrder } from "./orders";
+import { cancelOrder, placeOrder } from "./orders";
 import { decodeState, encodeState, freshState, MAX_ORDERS, type State } from "./state";
 
 const now = new Date("2026-09-20T09:00:00+09:00");
@@ -61,6 +61,24 @@ describe("쿠키에 담기", () => {
     expect(back.orders.at(-1)?.number).toBe("UM-0004");
     // 번호는 이어진다 — 빠진 주문의 번호를 다시 쓰지 않는다.
     expect(back.nextSeq).toBe(14);
+  });
+
+  it("취소된 주문은 취소됨으로 꺼내진다", () => {
+    const stock = initialStock();
+    const cart = addLine(EMPTY_CART, "milk-1l", 2, stock);
+    const placed = placeOrder(cart, stock, { seq: 1, now });
+    const cancelled = cancelOrder(placed.order, placed.stock);
+    const back = decodeState(
+      encodeState({ stock: cancelled.stock, cart: EMPTY_CART, orders: [cancelled.order], nextSeq: 2 }),
+    );
+    expect(back.orders[0]?.status).toBe("cancelled");
+    expect(back.stock["milk-1l"]).toBe(stock["milk-1l"]);
+  });
+
+  it("취소를 담아도 쿠키 한 장에 들어간다", () => {
+    const full = stateWithOrders(MAX_ORDERS);
+    const allCancelled = { ...full, orders: full.orders.map((o) => ({ ...o, status: "cancelled" as const })) };
+    expect(encodeState(allCancelled).length).toBeLessThan(3500);
   });
 
   it("없거나 깨진 값은 처음 상태다", () => {

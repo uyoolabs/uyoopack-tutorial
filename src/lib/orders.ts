@@ -3,6 +3,7 @@ import { type Cart, CartError, type Stock, summarize } from "./cart";
 /**
  * 주문의 규칙. 결제는 붙이지 않는다 — 주문을 확정하고 재고를 줄이는 데서 끝난다.
  * 주문 줄은 그때의 가격을 그대로 적어 둔다. 나중에 가격이 바뀌어도 지난 주문은 그대로여야 한다.
+ * 취소한 주문은 지우지 않고 취소됨으로 남긴다 — 지난 주문은 사라지지 않는다.
  */
 export type OrderLine = {
   productId: string;
@@ -21,8 +22,11 @@ export type Order = {
   subtotal: number;
   shipping: number;
   total: number;
-  status: "placed";
+  status: OrderStatus;
 };
+
+/** 확정된 주문(`placed`)은 취소할 수 있고, 취소한 주문(`cancelled`)은 그대로 남는다. */
+export type OrderStatus = "placed" | "cancelled";
 
 export function orderNumber(seq: number): string {
   return `UM-${String(seq).padStart(4, "0")}`;
@@ -64,4 +68,20 @@ export function placeOrder(
     status: "placed",
   };
   return { order, stock: next };
+}
+
+/**
+ * 확정된 주문을 취소한다. 주문은 지우지 않고 취소됨으로 남고, 재고는 주문 수량만큼 돌아온다.
+ * 이미 취소된 주문은 거절한다 — 두 번 취소하면 재고가 두 번 늘어난다.
+ * 돌려주는 값은 새 주문과 새 재고다(입력은 바꾸지 않는다).
+ */
+export function cancelOrder(order: Order, stock: Stock): { order: Order; stock: Stock } {
+  if (order.status === "cancelled") {
+    throw new CartError("already_cancelled", `${order.number}은 이미 취소된 주문입니다.`);
+  }
+  const next: Stock = { ...stock };
+  for (const line of order.lines) {
+    next[line.productId] = (next[line.productId] ?? 0) + line.qty;
+  }
+  return { order: { ...order, status: "cancelled" }, stock: next };
 }
