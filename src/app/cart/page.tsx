@@ -6,7 +6,7 @@ import { CartIcon, CheckIcon, TruckIcon } from "@/components/icons";
 import { QtyField } from "@/components/qty-field";
 import { Summary } from "@/components/summary";
 import { Thumb } from "@/components/thumb";
-import { FREE_SHIPPING_FROM, summarize } from "@/lib/cart";
+import { FREE_SHIPPING_FROM, MAX_LINE_QTY, summarize } from "@/lib/cart";
 import { won } from "@/lib/money";
 import { readState } from "@/lib/store";
 
@@ -95,7 +95,7 @@ export default async function CartPage({ searchParams }: { searchParams: Promise
                       <QtyField
                         label={`${l.product.name} 수량`}
                         min={0}
-                        max={state.stock[l.product.id] ?? 0}
+                        max={MAX_LINE_QTY}
                         defaultValue={l.qty}
                         submitOnStep
                       />

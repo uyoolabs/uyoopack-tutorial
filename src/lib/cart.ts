@@ -12,6 +12,8 @@ export const EMPTY_CART: Cart = { lines: [] };
 /** 이 금액부터 배송비가 없다. */
 export const FREE_SHIPPING_FROM = 30_000;
 export const SHIPPING_FEE = 3_000;
+/** 장바구니 한 줄에 담을 수 있는 최대 수량. */
+export const MAX_LINE_QTY = 99;
 
 export type CartErrorCode = "unknown_product" | "bad_qty" | "out_of_stock";
 
@@ -57,11 +59,10 @@ export function addLine(cart: Cart, productId: string, qty: number, stock: Stock
 }
 
 /** 수량을 바꾼다. 0 이면 뺀다. */
-export function setQty(cart: Cart, productId: string, qty: number, stock: Stock): Cart {
-  const product = requireProduct(productId);
+export function setQty(cart: Cart, productId: string, qty: number, _stock: Stock): Cart {
+  requireProduct(productId);
   requireQty(qty);
   if (qty === 0) return removeLine(cart, productId);
-  requireStock(product, qty, stock);
   const exists = cart.lines.some((l) => l.productId === productId);
   const lines = exists
     ? cart.lines.map((l) => (l.productId === productId ? { ...l, qty } : l))
@@ -75,7 +76,7 @@ export function removeLine(cart: Cart, productId: string): Cart {
 
 export function shippingFor(subtotal: number): number {
   if (subtotal === 0) return 0;
-  return subtotal > FREE_SHIPPING_FROM ? 0 : SHIPPING_FEE;
+  return subtotal >= FREE_SHIPPING_FROM ? 0 : SHIPPING_FEE;
 }
 
 export type SummaryLine = {
