@@ -52,8 +52,9 @@ describe("합계", () => {
     expect(summarize(EMPTY_CART)).toMatchObject({ subtotal: 0, shipping: 0, total: 0, count: 0 });
   });
 
-  it("3만 원 미만은 배송비가 붙고 3만 원을 넘으면 없다", () => {
+  it("3만 원 미만은 배송비가 붙고 3만 원부터는 없다", () => {
     expect(shippingFor(29_999)).toBe(SHIPPING_FEE);
+    expect(shippingFor(30_000)).toBe(0);
     expect(shippingFor(30_001)).toBe(0);
   });
 });
