@@ -10,12 +10,18 @@ import { useRef } from "react";
  */
 export function QtyField({
   label,
+  less,
+  more,
   min,
   max,
   defaultValue,
   submitOnStep = false,
 }: {
   label: string;
+  /** − 버튼의 이름. 화면의 언어로 서버가 지어 넘긴다. */
+  less: string;
+  /** + 버튼의 이름. */
+  more: string;
   min: number;
   max: number;
   defaultValue: number;
@@ -38,7 +44,7 @@ export function QtyField({
 
   return (
     <div className="inline-flex items-stretch overflow-hidden rounded-control border border-line bg-surface">
-      <button type="button" onClick={() => step(-1)} aria-label={`${label} 하나 줄이기`} className={button}>
+      <button type="button" onClick={() => step(-1)} aria-label={less} className={button}>
         −
       </button>
       <input
@@ -52,7 +58,7 @@ export function QtyField({
         aria-label={label}
         className="w-11 border-x border-line bg-surface text-center text-sm tabular-nums"
       />
-      <button type="button" onClick={() => step(1)} aria-label={`${label} 하나 늘리기`} className={button}>
+      <button type="button" onClick={() => step(1)} aria-label={more} className={button}>
         +
       </button>
     </div>

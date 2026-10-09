@@ -17,10 +17,22 @@ export const MAX_LINE_QTY = 99;
 
 export type CartErrorCode = "unknown_product" | "bad_qty" | "out_of_stock";
 
+/**
+ * 거절의 까닭과 그 문장에 들어가는 값. `message` 는 한국어 문장이고, 화면은 이 값으로 방문자의 언어에 맞춰
+ * 다시 쓴다(`messages.ts` 의 `errorText`).
+ */
+export type CartErrorDetail =
+  | { reason: "unknown_product" }
+  | { reason: "bad_qty" }
+  | { reason: "empty_cart" }
+  | { reason: "stock_limit"; productId: string; left: number }
+  | { reason: "stock_short"; productId: string; left: number };
+
 export class CartError extends Error {
   constructor(
     readonly code: CartErrorCode,
     message: string,
+    readonly detail: CartErrorDetail,
   ) {
     super(message);
     this.name = "CartError";
@@ -29,18 +41,24 @@ export class CartError extends Error {
 
 function requireProduct(productId: string): Product {
   const product = productById(productId);
-  if (!product) throw new CartError("unknown_product", "없는 상품입니다.");
+  if (!product) throw new CartError("unknown_product", "없는 상품입니다.", { reason: "unknown_product" });
   return product;
 }
 
 function requireQty(qty: number): void {
-  if (!Number.isInteger(qty) || qty < 0) throw new CartError("bad_qty", "수량은 0 이상의 정수여야 합니다.");
+  if (!Number.isInteger(qty) || qty < 0) {
+    throw new CartError("bad_qty", "수량은 0 이상의 정수여야 합니다.", { reason: "bad_qty" });
+  }
 }
 
 function requireStock(product: Product, qty: number, stock: Stock): void {
   const left = stock[product.id] ?? 0;
   if (qty > left) {
-    throw new CartError("out_of_stock", `${product.name}의 재고가 ${left}개라 ${left}개까지 담을 수 있습니다.`);
+    throw new CartError("out_of_stock", `${product.name}의 재고가 ${left}개라 ${left}개까지 담을 수 있습니다.`, {
+      reason: "stock_limit",
+      productId: product.id,
+      left,
+    });
   }
 }
 

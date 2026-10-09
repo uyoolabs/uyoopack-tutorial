@@ -37,13 +37,19 @@ export function placeOrder(
   stock: Stock,
   opts: { seq: number; now: Date },
 ): { order: Order; stock: Stock } {
-  if (cart.lines.length === 0) throw new CartError("bad_qty", "장바구니가 비어 있습니다.");
+  if (cart.lines.length === 0) {
+    throw new CartError("bad_qty", "장바구니가 비어 있습니다.", { reason: "empty_cart" });
+  }
   const summary = summarize(cart);
   const next: Stock = { ...stock };
   for (const line of summary.lines) {
     const left = next[line.product.id] ?? 0;
     if (line.qty > left) {
-      throw new CartError("out_of_stock", `${line.product.name}의 재고가 ${left}개뿐입니다.`);
+      throw new CartError("out_of_stock", `${line.product.name}의 재고가 ${left}개뿐입니다.`, {
+        reason: "stock_short",
+        productId: line.product.id,
+        left,
+      });
     }
     next[line.product.id] = left - line.qty;
   }

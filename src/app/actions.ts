@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { addLine, CartError, EMPTY_CART, removeLine, setQty } from "@/lib/cart";
+import { errorText } from "@/lib/messages";
 import { placeOrder } from "@/lib/orders";
+import { lang } from "@/lib/request-lang";
 import { mutate, resetState } from "@/lib/store";
 
 function qtyOf(form: FormData): number {
@@ -18,7 +20,7 @@ function idOf(form: FormData): string {
 }
 
 /**
- * 규칙이 거절하면 그 문장을 주소에 실어 같은 화면으로 돌아간다.
+ * 규칙이 거절하면 그 문장을 방문자의 언어로 써서 주소에 싣고 같은 화면으로 돌아간다.
  * `hash` 는 돌아갈 자리다 — 첫 화면은 배너가 커서, 담을 때마다 맨 위로 올라가면 상품을 다시 찾아 내려와야 한다.
  */
 async function run(to: string, fn: () => Promise<void>, hash = ""): Promise<never> {
@@ -31,7 +33,7 @@ async function run(to: string, fn: () => Promise<void>, hash = ""): Promise<neve
     await fn();
   } catch (err) {
     if (err instanceof CartError) {
-      redirect(url(`error=${encodeURIComponent(err.message)}`));
+      redirect(url(`error=${encodeURIComponent(errorText(err.detail, await lang()))}`));
     }
     throw err;
   }
